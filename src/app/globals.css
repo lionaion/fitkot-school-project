@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-deep-teal: #1C5F78;
+  --color-electric-teal: #2A7F9E;
+  --color-warm-lime: #B8D944;
+  --color-coral: #E8614A;
+  --color-off-white: #F4F3EF;
+
+  --font-display: "Barlow Condensed", sans-serif;
+  --font-heading: "Barlow Semi Condensed", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-off-white text-gray-900 font-body antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-heading font-semibold;
+  }
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @apply bg-gray-200 rounded;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

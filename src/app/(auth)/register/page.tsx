@@ -3,69 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
-      setLoading(false);
-      return;
-    }
-
-    if (data.user) {
-      // Create public profile (role defaults to 'user')
-      const { error: profileError } = await supabase.from("users").insert({
-        id: data.user.id,
-        email,
-        name,
-      });
-
-      if (profileError) {
-        setError(profileError.message);
-        setLoading(false);
-        return;
-      }
-    }
-
+    // DEMO MODE: Skip registration, go straight to dashboard
+    await new Promise((r) => setTimeout(r, 400));
     router.push("/dashboard");
-    router.refresh();
   }
 
-  async function handleOAuthRegister(provider: "google" | "github") {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setError(error.message);
-    }
+  function handleOAuthRegister() {
+    // DEMO MODE: Skip OAuth, go straight to dashboard
+    router.push("/dashboard");
   }
 
   return (
@@ -76,20 +35,21 @@ export default function RegisterPage() {
             Account aanmaken
           </h1>
           <p className="text-gray-500 mt-2">Start je FitKot journey</p>
+          <p className="text-xs font-mono text-coral mt-1">DEMO — Registratie wordt overgeslagen</p>
         </div>
 
         <div className="space-y-3">
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => handleOAuthRegister("google")}
+            onClick={handleOAuthRegister}
           >
             Registreren met Google
           </Button>
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => handleOAuthRegister("github")}
+            onClick={handleOAuthRegister}
           >
             Registreren met GitHub
           </Button>
@@ -133,10 +93,6 @@ export default function RegisterPage() {
             minLength={8}
             required
           />
-
-          {error && (
-            <p className="text-sm text-coral text-center">{error}</p>
-          )}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Bezig met registreren..." : "Registreren"}

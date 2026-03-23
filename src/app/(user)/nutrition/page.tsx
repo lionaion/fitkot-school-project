@@ -1,32 +1,33 @@
-import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { MealLogForm } from "@/components/workout/meal-log-form";
 
-export default async function NutritionPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+// DEMO MODE: Mock data
+const mockDietPlan = {
+  id: "dp1",
+  title: "Studentendieet — Bulk",
+  calories_target: 2400,
+  protein_target: 140,
+  carbs_target: 300,
+  fat_target: 80,
+  meals: [
+    { name: "Ontbijt", time: "08:00", foods: [{ item: "Havermout met banaan" }, { item: "Eiwitten shake" }] },
+    { name: "Lunch", time: "12:30", foods: [{ item: "Broodje kip" }, { item: "Yoghurt" }] },
+    { name: "Avondeten", time: "18:30", foods: [{ item: "Pasta met gehakt" }, { item: "Salade" }] },
+    { name: "Snack", time: "21:00", foods: [{ item: "Kwark met noten" }] },
+  ],
+};
 
-  // Active diet plan
-  const { data: dietPlan } = await supabase
-    .from("diet_plans")
-    .select("*")
-    .eq("user_id", user!.id)
-    .eq("active", true)
-    .single();
+const mockTodayMeals = [
+  { id: "m1", food_items: [{ item: "Havermout" }, { item: "Banaan" }], calories: 450, protein: 15, carbs: 75, fat: 8, created_at: "2026-03-23T08:15:00Z" },
+  { id: "m2", food_items: [{ item: "Broodje kip" }, { item: "Appel" }], calories: 520, protein: 35, carbs: 55, fat: 12, created_at: "2026-03-23T12:45:00Z" },
+  { id: "m3", food_items: [{ item: "Eiwitshake" }], calories: 180, protein: 30, carbs: 8, fat: 3, created_at: "2026-03-23T15:00:00Z" },
+];
 
-  // Today's meal logs
-  const today = new Date().toISOString().split("T")[0];
-  const { data: todayMeals } = await supabase
-    .from("meal_logs")
-    .select("*")
-    .eq("user_id", user!.id)
-    .eq("date", today)
-    .order("created_at", { ascending: true });
-
-  const totalCalories = todayMeals?.reduce((sum, m) => sum + m.calories, 0) ?? 0;
-  const totalProtein = todayMeals?.reduce((sum, m) => sum + Number(m.protein), 0) ?? 0;
-  const totalCarbs = todayMeals?.reduce((sum, m) => sum + Number(m.carbs), 0) ?? 0;
-  const totalFat = todayMeals?.reduce((sum, m) => sum + Number(m.fat), 0) ?? 0;
+export default function NutritionPage() {
+  const totalCalories = mockTodayMeals.reduce((sum, m) => sum + m.calories, 0);
+  const totalProtein = mockTodayMeals.reduce((sum, m) => sum + m.protein, 0);
+  const totalCarbs = mockTodayMeals.reduce((sum, m) => sum + m.carbs, 0);
+  const totalFat = mockTodayMeals.reduce((sum, m) => sum + m.fat, 0);
 
   return (
     <div className="space-y-8">
@@ -39,94 +40,71 @@ export default async function NutritionPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
           <p className="text-3xl font-bold text-deep-teal">{totalCalories}</p>
-          <p className="text-sm text-gray-500">
-            kcal{dietPlan ? ` / ${dietPlan.calories_target}` : ""}
-          </p>
+          <p className="text-sm text-gray-500">kcal / {mockDietPlan.calories_target}</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-electric-teal">{totalProtein.toFixed(0)}g</p>
-          <p className="text-sm text-gray-500">
-            Eiwit{dietPlan?.protein_target ? ` / ${dietPlan.protein_target}g` : ""}
-          </p>
+          <p className="text-3xl font-bold text-electric-teal">{totalProtein}g</p>
+          <p className="text-sm text-gray-500">Eiwit / {mockDietPlan.protein_target}g</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-warm-lime">{totalCarbs.toFixed(0)}g</p>
-          <p className="text-sm text-gray-500">
-            Koolh.{dietPlan?.carbs_target ? ` / ${dietPlan.carbs_target}g` : ""}
-          </p>
+          <p className="text-3xl font-bold text-warm-lime">{totalCarbs}g</p>
+          <p className="text-sm text-gray-500">Koolh. / {mockDietPlan.carbs_target}g</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-coral">{totalFat.toFixed(0)}g</p>
-          <p className="text-sm text-gray-500">
-            Vet{dietPlan?.fat_target ? ` / ${dietPlan.fat_target}g` : ""}
-          </p>
+          <p className="text-3xl font-bold text-coral">{totalFat}g</p>
+          <p className="text-sm text-gray-500">Vet / {mockDietPlan.fat_target}g</p>
         </Card>
       </div>
 
       {/* Log meal */}
       <Card>
         <h2 className="text-xl font-heading font-semibold mb-4">Maaltijd loggen</h2>
-        <MealLogForm dietPlanId={dietPlan?.id ?? null} />
+        <MealLogForm dietPlanId={mockDietPlan.id} />
       </Card>
 
       {/* Today's meals */}
       <section>
         <h2 className="text-xl font-heading font-semibold mb-4">Vandaag</h2>
-        {todayMeals && todayMeals.length > 0 ? (
-          <Card>
-            <ul className="divide-y divide-gray-100">
-              {todayMeals.map((meal) => (
-                <li key={meal.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    {Array.isArray(meal.food_items) &&
-                      meal.food_items.map((item: { item: string }, idx: number) => (
-                        <span key={idx} className="text-sm">
-                          {idx > 0 && ", "}
-                          {item.item}
-                        </span>
-                      ))}
-                  </div>
-                  <span className="text-sm font-mono text-gray-400">
-                    {meal.calories} kcal
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        ) : (
-          <Card>
-            <p className="text-gray-400 text-center py-8">
-              Nog geen maaltijden vandaag. Log je eerste maaltijd!
-            </p>
-          </Card>
-        )}
+        <Card>
+          <ul className="divide-y divide-gray-100">
+            {mockTodayMeals.map((meal) => (
+              <li key={meal.id} className="py-3 flex justify-between items-center">
+                <div>
+                  {meal.food_items.map((item: { item: string }, idx: number) => (
+                    <span key={idx} className="text-sm">
+                      {idx > 0 && ", "}
+                      {item.item}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-sm font-mono text-gray-400">
+                  {meal.calories} kcal
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       </section>
 
       {/* Diet plan */}
-      {dietPlan && (
-        <section>
-          <h2 className="text-xl font-heading font-semibold mb-4">Dieetplan: {dietPlan.title}</h2>
-          <Card>
-            {Array.isArray(dietPlan.meals) && dietPlan.meals.length > 0 ? (
-              <ul className="divide-y divide-gray-100">
-                {dietPlan.meals.map((meal: { name: string; time: string; foods: { item: string }[] }, idx: number) => (
-                  <li key={idx} className="py-3">
-                    <div className="flex justify-between">
-                      <p className="font-medium">{meal.name}</p>
-                      <span className="text-sm text-gray-400 font-mono">{meal.time}</span>
-                    </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {meal.foods?.map((f: { item: string }) => f.item).join(", ")}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400 text-center py-4">Geen maaltijden in dit plan.</p>
-            )}
-          </Card>
-        </section>
-      )}
+      <section>
+        <h2 className="text-xl font-heading font-semibold mb-4">Dieetplan: {mockDietPlan.title}</h2>
+        <Card>
+          <ul className="divide-y divide-gray-100">
+            {mockDietPlan.meals.map((meal, idx) => (
+              <li key={idx} className="py-3">
+                <div className="flex justify-between">
+                  <p className="font-medium">{meal.name}</p>
+                  <span className="text-sm text-gray-400 font-mono">{meal.time}</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  {meal.foods.map((f: { item: string }) => f.item).join(", ")}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </section>
     </div>
   );
 }

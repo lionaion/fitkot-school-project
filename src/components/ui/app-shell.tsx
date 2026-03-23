@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Nav } from "@/components/ui/nav";
 import type { UserRole } from "@/types/database";
 
@@ -12,12 +11,10 @@ interface AppShellProps {
 
 export function AppShell({ role, children }: AppShellProps) {
   const router = useRouter();
-  const supabase = createClient();
 
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+  function handleSignOut() {
+    // DEMO MODE: Just redirect to home
+    router.push("/");
   }
 
   return (

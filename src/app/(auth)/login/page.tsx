@@ -3,47 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
+    // DEMO MODE: Skip auth, go straight to dashboard
+    await new Promise((r) => setTimeout(r, 400));
     router.push("/dashboard");
-    router.refresh();
   }
 
-  async function handleOAuthLogin(provider: "google" | "github") {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    });
-
-    if (error) {
-      setError(error.message);
-    }
+  function handleOAuthLogin() {
+    // DEMO MODE: Skip OAuth, go straight to dashboard
+    router.push("/dashboard");
   }
 
   return (
@@ -54,20 +34,21 @@ export default function LoginPage() {
             Welkom terug
           </h1>
           <p className="text-gray-500 mt-2">Log in bij FitKot</p>
+          <p className="text-xs font-mono text-coral mt-1">DEMO — Login wordt overgeslagen</p>
         </div>
 
         <div className="space-y-3">
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => handleOAuthLogin("google")}
+            onClick={handleOAuthLogin}
           >
             Inloggen met Google
           </Button>
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => handleOAuthLogin("github")}
+            onClick={handleOAuthLogin}
           >
             Inloggen met GitHub
           </Button>
@@ -101,10 +82,6 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-
-          {error && (
-            <p className="text-sm text-coral text-center">{error}</p>
-          )}
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Bezig met inloggen..." : "Inloggen"}

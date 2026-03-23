@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 interface TrainerAssignmentsProps {
@@ -16,9 +14,9 @@ interface TrainerAssignmentsProps {
   }[];
 }
 
-export function TrainerAssignments({ trainers, users, assignments }: TrainerAssignmentsProps) {
-  const router = useRouter();
-  const supabase = createClient();
+export function TrainerAssignments({ trainers, users, assignments: initialAssignments }: TrainerAssignmentsProps) {
+  // DEMO MODE: Local state management instead of Supabase
+  const [assignments, setAssignments] = useState(initialAssignments);
   const [selectedTrainer, setSelectedTrainer] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,20 +24,26 @@ export function TrainerAssignments({ trainers, users, assignments }: TrainerAssi
   async function handleAssign() {
     if (!selectedTrainer || !selectedClient) return;
     setLoading(true);
-    await supabase.from("trainer_clients").insert({
-      trainer_id: selectedTrainer,
-      client_id: selectedClient,
-    });
+    await new Promise((r) => setTimeout(r, 300));
+    const clientUser = users.find((u) => u.id === selectedClient);
+    setAssignments([
+      ...assignments,
+      {
+        id: `demo-${Date.now()}`,
+        trainer_id: selectedTrainer,
+        client_id: selectedClient,
+        users: { name: clientUser?.name ?? "Onbekend" },
+      },
+    ]);
     setLoading(false);
     setSelectedClient("");
-    router.refresh();
   }
 
   async function handleRemove(assignmentId: string) {
     setLoading(true);
-    await supabase.from("trainer_clients").delete().eq("id", assignmentId);
+    await new Promise((r) => setTimeout(r, 300));
+    setAssignments(assignments.filter((a) => a.id !== assignmentId));
     setLoading(false);
-    router.refresh();
   }
 
   return (

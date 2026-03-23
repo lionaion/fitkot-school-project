@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -19,11 +18,10 @@ interface ExerciseEntry {
 
 export default function NewPlanPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
-  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exercises, setExercises] = useState<ExerciseEntry[]>([
     { name: "", sets: 3, reps: 10, unit: "reps", notes: "" },
@@ -46,42 +44,23 @@ export default function NewPlanPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setError("Je bent niet ingelogd.");
-      setLoading(false);
-      return;
-    }
-
-    const validExercises = exercises.filter((ex) => ex.name.trim() !== "");
-    const tagArray = tags
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    const { error: insertError } = await supabase.from("workout_plans").insert({
-      trainer_id: user.id,
-      title,
-      description,
-      exercises: validExercises,
-      tags: tagArray,
-    });
-
-    if (insertError) {
-      setError(insertError.message);
-      setLoading(false);
-      return;
-    }
-
-    router.push("/plans");
-    router.refresh();
+    // DEMO MODE: Simulate save delay
+    await new Promise((r) => setTimeout(r, 500));
+    setLoading(false);
+    setSuccess(true);
+    setTimeout(() => router.push("/plans"), 1000);
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-3xl font-display font-bold text-deep-teal">Nieuw trainingsplan</h1>
+
+      {success && (
+        <div className="bg-warm-lime/20 text-green-700 px-4 py-3 rounded-xl text-sm font-medium">
+          Plan opgeslagen! (demo) Je wordt doorgestuurd...
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="space-y-4">
@@ -150,7 +129,7 @@ export default function NewPlanPage() {
                 <select
                   className="w-full px-3 py-3 rounded-xl border border-gray-300 bg-white text-sm min-h-[44px]"
                   value={ex.unit}
-                  onChange={(e) => updateExercise(i, "unit", e.target.value)}
+                  onChange={(e) => updateExercise(i, "unit", e.target.value as WorkoutUnit)}
                 >
                   <option value="reps">Reps</option>
                   <option value="seconds">Sec</option>
@@ -174,10 +153,8 @@ export default function NewPlanPage() {
           </Button>
         </Card>
 
-        {error && <p className="text-sm text-coral text-center">{error}</p>}
-
         <div className="flex gap-4">
-          <Button type="submit" className="flex-1" disabled={loading}>
+          <Button type="submit" className="flex-1" disabled={loading || success}>
             {loading ? "Opslaan..." : "Plan opslaan"}
           </Button>
           <Button type="button" variant="secondary" onClick={() => router.back()}>

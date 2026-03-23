@@ -1,44 +1,20 @@
-import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Dumbbell, Flame, Camera, UtensilsCrossed } from "lucide-react";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+// DEMO MODE: Mock data instead of Supabase queries
+const mockRecentLogs = [
+  { id: "1", date: "2026-03-23", duration: 35, exercises: [{ name: "Push-ups" }, { name: "Squats" }, { name: "Plank" }] },
+  { id: "2", date: "2026-03-21", duration: 25, exercises: [{ name: "Lunges" }, { name: "Burpees" }] },
+  { id: "3", date: "2026-03-19", duration: 40, exercises: [{ name: "Mountain Climbers" }, { name: "Sit-ups" }, { name: "Dips" }, { name: "Calf Raises" }] },
+  { id: "4", date: "2026-03-17", duration: 30, exercises: [{ name: "Push-ups" }, { name: "Plank" }, { name: "Squats" }] },
+];
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("name")
-    .eq("id", user!.id)
-    .single();
-
-  // Recent workout logs (last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const { count: weeklyWorkouts } = await supabase
-    .from("workout_logs")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user!.id)
-    .gte("date", sevenDaysAgo.toISOString().split("T")[0]);
-
-  const { count: totalPhotos } = await supabase
-    .from("progress_photos")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user!.id);
-
-  const { data: recentLogs } = await supabase
-    .from("workout_logs")
-    .select("id, date, duration, exercises")
-    .eq("user_id", user!.id)
-    .order("date", { ascending: false })
-    .limit(5);
-
+export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-display font-bold text-deep-teal">
-          Hallo, {profile?.name || "Sporter"}
+          Hallo, Stan
         </h1>
         <p className="text-gray-500 mt-1">Hier is je overzicht voor deze week.</p>
       </div>
@@ -49,7 +25,7 @@ export default async function DashboardPage() {
             <Dumbbell className="w-6 h-6 text-electric-teal" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{weeklyWorkouts ?? 0}</p>
+            <p className="text-2xl font-bold">4</p>
             <p className="text-sm text-gray-500">Workouts deze week</p>
           </div>
         </Card>
@@ -59,7 +35,7 @@ export default async function DashboardPage() {
             <Flame className="w-6 h-6 text-warm-lime" />
           </div>
           <div>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">12</p>
             <p className="text-sm text-gray-500">Dagen streak</p>
           </div>
         </Card>
@@ -69,7 +45,7 @@ export default async function DashboardPage() {
             <Camera className="w-6 h-6 text-coral" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalPhotos ?? 0}</p>
+            <p className="text-2xl font-bold">6</p>
             <p className="text-sm text-gray-500">Voortgangsfoto&apos;s</p>
           </div>
         </Card>
@@ -79,7 +55,7 @@ export default async function DashboardPage() {
             <UtensilsCrossed className="w-6 h-6 text-deep-teal" />
           </div>
           <div>
-            <p className="text-2xl font-bold">0</p>
+            <p className="text-2xl font-bold">1 850</p>
             <p className="text-sm text-gray-500">Kcal vandaag</p>
           </div>
         </Card>
@@ -87,27 +63,21 @@ export default async function DashboardPage() {
 
       <Card>
         <h2 className="text-xl font-heading font-semibold mb-4">Recente workouts</h2>
-        {recentLogs && recentLogs.length > 0 ? (
-          <ul className="divide-y divide-gray-100">
-            {recentLogs.map((log) => (
-              <li key={log.id} className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="font-medium">{log.date}</p>
-                  <p className="text-sm text-gray-500">
-                    {Array.isArray(log.exercises) ? log.exercises.length : 0} oefeningen
-                  </p>
-                </div>
-                <span className="text-sm font-mono text-gray-400">
-                  {log.duration} min
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-400 text-center py-8">
-            Nog geen workouts gelogd. Start vandaag!
-          </p>
-        )}
+        <ul className="divide-y divide-gray-100">
+          {mockRecentLogs.map((log) => (
+            <li key={log.id} className="py-3 flex justify-between items-center">
+              <div>
+                <p className="font-medium">{log.date}</p>
+                <p className="text-sm text-gray-500">
+                  {log.exercises.length} oefeningen
+                </p>
+              </div>
+              <span className="text-sm font-mono text-gray-400">
+                {log.duration} min
+              </span>
+            </li>
+          ))}
+        </ul>
       </Card>
     </div>
   );

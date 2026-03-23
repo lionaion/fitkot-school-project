@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import type { UserRole, UserStatus } from "@/types/database";
 
@@ -19,23 +17,23 @@ interface UserManagementTableProps {
   users: User[];
 }
 
-export function UserManagementTable({ users }: UserManagementTableProps) {
-  const router = useRouter();
-  const supabase = createClient();
+export function UserManagementTable({ users: initialUsers }: UserManagementTableProps) {
+  // DEMO MODE: Local state management instead of Supabase
+  const [users, setUsers] = useState(initialUsers);
   const [loading, setLoading] = useState<string | null>(null);
 
   async function updateRole(userId: string, newRole: UserRole) {
     setLoading(userId);
-    await supabase.from("users").update({ role: newRole }).eq("id", userId);
+    await new Promise((r) => setTimeout(r, 300));
+    setUsers(users.map((u) => u.id === userId ? { ...u, role: newRole } : u));
     setLoading(null);
-    router.refresh();
   }
 
   async function updateStatus(userId: string, newStatus: UserStatus) {
     setLoading(userId);
-    await supabase.from("users").update({ status: newStatus }).eq("id", userId);
+    await new Promise((r) => setTimeout(r, 300));
+    setUsers(users.map((u) => u.id === userId ? { ...u, status: newStatus } : u));
     setLoading(null);
-    router.refresh();
   }
 
   return (

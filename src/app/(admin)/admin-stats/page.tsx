@@ -1,31 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Users, Dumbbell, ClipboardList, UtensilsCrossed } from "lucide-react";
 
-export default async function AdminStatsPage() {
-  const supabase = await createClient();
-
-  const { count: totalUsers } = await supabase
-    .from("users")
-    .select("*", { count: "exact", head: true });
-
-  const { count: totalTrainers } = await supabase
-    .from("users")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "trainer");
-
-  const { count: totalWorkoutLogs } = await supabase
-    .from("workout_logs")
-    .select("*", { count: "exact", head: true });
-
-  const { count: totalPlans } = await supabase
-    .from("workout_plans")
-    .select("*", { count: "exact", head: true });
-
-  const { count: totalDietPlans } = await supabase
-    .from("diet_plans")
-    .select("*", { count: "exact", head: true });
-
+// DEMO MODE: Mock data
+export default function AdminStatsPage() {
   return (
     <div className="space-y-8">
       <div>
@@ -39,7 +16,7 @@ export default async function AdminStatsPage() {
             <Users className="w-6 h-6 text-electric-teal" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalUsers ?? 0}</p>
+            <p className="text-2xl font-bold">42</p>
             <p className="text-sm text-gray-500">Gebruikers</p>
           </div>
         </Card>
@@ -49,7 +26,7 @@ export default async function AdminStatsPage() {
             <Users className="w-6 h-6 text-warm-lime" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalTrainers ?? 0}</p>
+            <p className="text-2xl font-bold">5</p>
             <p className="text-sm text-gray-500">Trainers</p>
           </div>
         </Card>
@@ -59,7 +36,7 @@ export default async function AdminStatsPage() {
             <Dumbbell className="w-6 h-6 text-deep-teal" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalWorkoutLogs ?? 0}</p>
+            <p className="text-2xl font-bold">287</p>
             <p className="text-sm text-gray-500">Workout logs</p>
           </div>
         </Card>
@@ -69,7 +46,7 @@ export default async function AdminStatsPage() {
             <ClipboardList className="w-6 h-6 text-coral" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalPlans ?? 0}</p>
+            <p className="text-2xl font-bold">18</p>
             <p className="text-sm text-gray-500">Trainingsplannen</p>
           </div>
         </Card>
@@ -80,7 +57,7 @@ export default async function AdminStatsPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-3">
             <UtensilsCrossed className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-600">{totalDietPlans ?? 0} dieetplannen</span>
+            <span className="text-sm text-gray-600">12 dieetplannen</span>
           </div>
         </div>
       </Card>

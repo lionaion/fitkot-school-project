@@ -3,11 +3,14 @@ import { Dumbbell, Users, ShieldCheck } from "lucide-react";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4 bg-off-white">
       <div className="max-w-2xl text-center space-y-8">
-        <h1 className="text-5xl font-bold font-display text-deep-teal">
-          FitKot
-        </h1>
+        <div>
+          <h1 className="text-5xl font-bold font-display text-deep-teal">
+            FitKot
+          </h1>
+          <p className="text-sm font-mono text-coral mt-2">DEMO MODUS</p>
+        </div>
         <p className="text-xl text-gray-600">
           Train in je kot. Geen materiaal nodig, geen excuses.
         </p>
@@ -38,19 +41,32 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center px-8 py-3 bg-deep-teal text-white rounded-xl font-heading font-semibold text-lg hover:bg-electric-teal transition-colors min-h-[44px]"
-          >
-            Inloggen
-          </Link>
-          <Link
-            href="/register"
-            className="inline-flex items-center justify-center px-8 py-3 border-2 border-deep-teal text-deep-teal rounded-xl font-heading font-semibold text-lg hover:bg-deep-teal hover:text-white transition-colors min-h-[44px]"
-          >
-            Registreren
-          </Link>
+        {/* Demo role selection */}
+        <div className="space-y-4 mt-8">
+          <p className="text-sm font-mono text-gray-500 uppercase tracking-wider">Kies een rol om te verkennen</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center px-8 py-3 bg-deep-teal text-white rounded-xl font-heading font-semibold text-lg hover:bg-electric-teal transition-colors min-h-[44px]"
+            >
+              <Dumbbell className="w-5 h-5 mr-2" />
+              Student (User)
+            </Link>
+            <Link
+              href="/trainer-dashboard"
+              className="inline-flex items-center justify-center px-8 py-3 bg-electric-teal text-white rounded-xl font-heading font-semibold text-lg hover:bg-deep-teal transition-colors min-h-[44px]"
+            >
+              <Users className="w-5 h-5 mr-2" />
+              Trainer
+            </Link>
+            <Link
+              href="/admin-users"
+              className="inline-flex items-center justify-center px-8 py-3 bg-coral text-white rounded-xl font-heading font-semibold text-lg hover:bg-coral/80 transition-colors min-h-[44px]"
+            >
+              <ShieldCheck className="w-5 h-5 mr-2" />
+              Admin
+            </Link>
+          </div>
         </div>
       </div>
     </main>

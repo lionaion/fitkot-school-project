@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
@@ -19,11 +17,9 @@ interface MealLogFormProps {
   dietPlanId: string | null;
 }
 
-export function MealLogForm({ dietPlanId }: MealLogFormProps) {
-  const router = useRouter();
-  const supabase = createClient();
+export function MealLogForm({ dietPlanId: _dietPlanId }: MealLogFormProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [foods, setFoods] = useState<FoodEntry[]>([
     { item: "", calories: 0, protein: 0, carbs: 0, fat: 0 },
   ]);
@@ -45,40 +41,13 @@ export function MealLogForm({ dietPlanId }: MealLogFormProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setError("Je bent niet ingelogd.");
-      setLoading(false);
-      return;
-    }
-
-    const validFoods = foods.filter((f) => f.item.trim() !== "");
-    const totalCalories = validFoods.reduce((sum, f) => sum + f.calories, 0);
-    const totalProtein = validFoods.reduce((sum, f) => sum + f.protein, 0);
-    const totalCarbs = validFoods.reduce((sum, f) => sum + f.carbs, 0);
-    const totalFat = validFoods.reduce((sum, f) => sum + f.fat, 0);
-
-    const { error: insertError } = await supabase.from("meal_logs").insert({
-      user_id: user.id,
-      diet_plan_id: dietPlanId,
-      food_items: validFoods,
-      calories: totalCalories,
-      protein: totalProtein,
-      carbs: totalCarbs,
-      fat: totalFat,
-    });
-
-    if (insertError) {
-      setError(insertError.message);
-      setLoading(false);
-      return;
-    }
-
-    router.refresh();
-    setFoods([{ item: "", calories: 0, protein: 0, carbs: 0, fat: 0 }]);
+    // DEMO MODE: Simulate save delay
+    await new Promise((r) => setTimeout(r, 500));
     setLoading(false);
+    setSuccess(true);
+    setFoods([{ item: "", calories: 0, protein: 0, carbs: 0, fat: 0 }]);
+    setTimeout(() => setSuccess(false), 3000);
   }
 
   return (
@@ -147,7 +116,9 @@ export function MealLogForm({ dietPlanId }: MealLogFormProps) {
         Voedsel toevoegen
       </Button>
 
-      {error && <p className="text-sm text-coral">{error}</p>}
+      {success && (
+        <p className="text-sm text-green-600 font-medium">Maaltijd opgeslagen! (demo)</p>
+      )}
 
       <Button type="submit" disabled={loading}>
         {loading ? "Opslaan..." : "Maaltijd opslaan"}

@@ -1,27 +1,42 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-export default async function WorkoutsPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+// DEMO MODE: Mock data
+const mockPlans = [
+  {
+    id: "p1",
+    title: "Bodyweight Basics",
+    description: "Een beginnersvriendelijk plan met oefeningen die je in je kot kunt doen zonder materiaal.",
+    tags: ["geen materiaal", "beginner", "kleine ruimte"],
+    exercises: [
+      { name: "Push-ups", sets: 3, reps: 12 },
+      { name: "Squats", sets: 3, reps: 15 },
+      { name: "Plank", sets: 3, reps: 45 },
+    ],
+  },
+  {
+    id: "p2",
+    title: "HIIT Kottraining",
+    description: "Korte maar intensieve intervallen. Ideaal voor drukke studiedagen.",
+    tags: ["HIIT", "<20 min", "intensief"],
+    exercises: [
+      { name: "Burpees", sets: 4, reps: 10 },
+      { name: "Mountain Climbers", sets: 4, reps: 20 },
+    ],
+  },
+];
 
-  // Get assigned plans
-  const { data: assignments } = await supabase
-    .from("plan_assignments")
-    .select("plan_id, workout_plans(id, title, description, exercises, tags)")
-    .eq("user_id", user!.id);
+const mockLogs = [
+  { id: "l1", date: "2026-03-23", duration: 35, exercises: [{}, {}, {}], notes: "Voelde goed, kon alle sets afmaken" },
+  { id: "l2", date: "2026-03-21", duration: 25, exercises: [{}, {}], notes: "" },
+  { id: "l3", date: "2026-03-19", duration: 40, exercises: [{}, {}, {}, {}], notes: "Zware sessie, benen trilden" },
+  { id: "l4", date: "2026-03-17", duration: 30, exercises: [{}, {}, {}], notes: "" },
+  { id: "l5", date: "2026-03-15", duration: 20, exercises: [{}, {}], notes: "Snelle ochtendtraining" },
+];
 
-  // Get workout history
-  const { data: logs } = await supabase
-    .from("workout_logs")
-    .select("*")
-    .eq("user_id", user!.id)
-    .order("date", { ascending: false })
-    .limit(20);
-
+export default function WorkoutsPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -40,75 +55,50 @@ export default async function WorkoutsPage() {
       {/* Assigned plans */}
       <section>
         <h2 className="text-xl font-heading font-semibold mb-4">Mijn plannen</h2>
-        {assignments && assignments.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {assignments.map((a) => {
-              const plan = a.workout_plans as unknown as {
-                id: string;
-                title: string;
-                description: string;
-                tags: string[];
-                exercises: unknown[];
-              };
-              return (
-                <Card key={plan.id} className="space-y-3">
-                  <h3 className="font-heading font-semibold text-lg">{plan.title}</h3>
-                  <p className="text-sm text-gray-500 line-clamp-2">{plan.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {plan.tags?.map((tag: string) => (
-                      <span
-                        key={tag}
-                        className="text-xs px-2 py-1 bg-electric-teal/10 text-electric-teal rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-400 font-mono">
-                    {plan.exercises?.length ?? 0} oefeningen
-                  </p>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card>
-            <p className="text-gray-400 text-center py-8">
-              Je hebt nog geen trainingsplannen. Vraag je trainer om een plan toe te wijzen.
-            </p>
-          </Card>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {mockPlans.map((plan) => (
+            <Card key={plan.id} className="space-y-3">
+              <h3 className="font-heading font-semibold text-lg">{plan.title}</h3>
+              <p className="text-sm text-gray-500 line-clamp-2">{plan.description}</p>
+              <div className="flex flex-wrap gap-2">
+                {plan.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs px-2 py-1 bg-electric-teal/10 text-electric-teal rounded-full"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 font-mono">
+                {plan.exercises.length} oefeningen
+              </p>
+            </Card>
+          ))}
+        </div>
       </section>
 
       {/* Workout history */}
       <section>
         <h2 className="text-xl font-heading font-semibold mb-4">Geschiedenis</h2>
-        {logs && logs.length > 0 ? (
-          <Card>
-            <ul className="divide-y divide-gray-100">
-              {logs.map((log) => (
-                <li key={log.id} className="py-3 flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{log.date}</p>
-                    <p className="text-sm text-gray-500">
-                      {Array.isArray(log.exercises) ? log.exercises.length : 0} oefeningen
-                      {log.notes && ` — ${log.notes}`}
-                    </p>
-                  </div>
-                  <span className="text-sm font-mono text-gray-400">
-                    {log.duration} min
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        ) : (
-          <Card>
-            <p className="text-gray-400 text-center py-8">
-              Nog geen workouts gelogd.
-            </p>
-          </Card>
-        )}
+        <Card>
+          <ul className="divide-y divide-gray-100">
+            {mockLogs.map((log) => (
+              <li key={log.id} className="py-3 flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{log.date}</p>
+                  <p className="text-sm text-gray-500">
+                    {log.exercises.length} oefeningen
+                    {log.notes && ` — ${log.notes}`}
+                  </p>
+                </div>
+                <span className="text-sm font-mono text-gray-400">
+                  {log.duration} min
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
       </section>
     </div>
   );
